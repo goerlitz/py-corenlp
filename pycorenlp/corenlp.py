@@ -1,4 +1,4 @@
-import json, requests
+import json, requests, sys
 
 class StanfordCoreNLP:
 
@@ -8,7 +8,7 @@ class StanfordCoreNLP:
         self.server_url = server_url
 
     def annotate(self, text, properties=None):
-        assert isinstance(text, str)
+        assert isinstance(text, str), "text parameter is not 'str'"
         if properties is None:
             properties = {}
         else:
@@ -22,11 +22,14 @@ class StanfordCoreNLP:
             '$ cd stanford-corenlp-full-2015-12-09/ \n'
             '$ java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer')
 
-        data = text.encode()
+        # ensure proper encoding of python 3 strings
+        if sys.version_info.major >= 3:
+            text = text.encode('utf-8')
+
         r = requests.post(
             self.server_url, params={
                 'properties': str(properties)
-            }, data=data, headers={'Connection': 'close'})
+            }, data=text, headers={'Connection': 'close'})
         output = r.text
         if ('outputFormat' in properties
              and properties['outputFormat'] == 'json'):
